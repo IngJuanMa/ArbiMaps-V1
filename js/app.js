@@ -390,8 +390,16 @@ function limpiarFiltro() {
   document.getElementById('filtro-valor').value = '';
   if (capaFiltrada) map.removeLayer(capaFiltrada);
   capaFiltrada = null;
-  map.setZoom(13);
-}
+    const comunas = geojsonOriginal["Comunas"];
+  if (comunas && comunas.features && comunas.features.length > 0) {
+    const capaComunas = L.geoJSON(comunas);
+    map.fitBounds(capaComunas.getBounds());
+    capaComunas.remove(); // Elimina la capa temporal
+  } else {
+    map.setZoom(13); // Fallback si no está cargada
+  }
+};
+
 
 // Control de capas desde checkboxes del menú Gestionar Capas
 function toggleCapa(nombre) {
