@@ -1,9 +1,44 @@
-const map = L.map('map').setView([2.93, -75.28], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// const map = L.map('map').setView([2.93, -75.28], 13);
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//   maxZoom: 19,
+//   attribution: '&copy; OpenStreetMap contributors'
+// }).addTo(map);
+// L.control.scale({ position: 'bottomleft' }).addTo(map);
+
+const callejero = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-L.control.scale({ position: 'bottomleft' }).addTo(map);
+});
+
+const satelital = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19,
+  attribution: '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+});
+
+const hibrido = L.layerGroup([
+  satelital,
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    opacity: 0.3
+  })
+]);
+
+const map = L.map('map', {
+  center: [2.93, -75.28],
+  zoom: 13,
+  layers: [callejero]  // capa inicial
+});
+
+// Control de capas base
+const baseMaps = {
+  "Calles": callejero,
+  "Satelital": satelital,
+  "Híbrido": hibrido
+};
+
+// Aquí puedes añadir también tus capas vectoriales si quieres mostrarlas en el control
+L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
+
 
 let capaZonaActual = null;
 let capaFiltrada = null;
