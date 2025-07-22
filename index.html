@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Visor v1 - Neiva</title>
-  <link rel="icon" href="logoarbi.png">
+  <link rel="icon" href="assets/img/Frame_2.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
@@ -18,47 +18,106 @@
 
   <nav class="navbar navbar-expand-lg bg-white mb-0" id="visor-header">
     <div class="container-fluid rounded-4 mx-1 px-3 " style="background-color: #002F55;">
-      <div class="d-flex align-items-center justify-content-between gap-2 ">
+      <div class="d-flex align-items-center justify-content-between gap-2 my-1">
         <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="https://arbimaps.com/index.php"
           target="_blank">
-          <img src="logoarbi.png" alt="Logo Arbi" class="img-arbi">
+          <img src="assets/img/Frame_2.png" alt="Logo Arbi" class="img-arbi" style="width: 40px; height: 40px;"
+            class="my-1">
         </a>
 
         <h5 class="fw-bold text-white m-0 d-none d-md-inline-block" style="color:#002F55; font-size: 0.8em;">Visor
-          Urbano
-          Neiva</h5>
+          Urbano Neiva</h5>
         <button id="mostrar-menu" class="d-md-none" type="button" data-bs-toggle="offcanvas"
           data-bs-target="#offcanvasFiltros" aria-controls="offcanvasFiltros" style="background-color: transparent;">
-          <i class="bi bi-list-ul text-white fs-1"></i>
+          <i class="bi bi-list text-white fs-1"></i>
         </button>
 
       </div>
 
-      <div class="d-flex text-white align-items-center gap-2  gap-md-5">
+      <div class="d-flex text-white align-items-center gap-2  gap-md-3">
+
+        <!-- boton home, para volver al zoom inicial -->
+        <button class="btn btn-light btn-sm rounded-3" onclick="limpiarFiltro();">
+          <i class="bi bi-house-fill" style="color: #002F55;"></i>
+        </button>
+
+
+        <!-- Sección dropdown para seleccionar la capa que se quiere mostrar en el mapa -->
+        <div class="dropdown" id="selector-mapa">
+          <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2 rounded-3" type="button"
+            id="dropdownMapaBase" data-bs-toggle="dropdown" aria-expanded="false" style="color: #002F55;">
+            <span class="d-none d-sm-inline fw-bold" style="color: #002F55;">Vista</span>
+            <i class="bi bi-eye-fill"></i>
+          </button>
+          <div class="dropdown-menu py-3 rounded-3 " aria-labelledby="dropdownMapaBase"
+            style="min-width: 100px; width: 100px;">
+
+            <article class="d-flex flex-column align-items-center mb-3 capa-vista"
+              onclick="cambiarMapaBase('callejero')">
+              <img src="assets/img/relieve.png" alt="capa_relieve" class=" rounded-4"
+                style="cursor: pointer; width: 60px; height: 60px;">
+              <small style="color: #002F55;">Relieve</small>
+            </article>
+
+            <article class="d-flex flex-column align-items-center mb-3 capa-vista"
+              onclick="cambiarMapaBase('satelital')">
+              <img src="assets/img/satelite.png" alt="capa_satelital" class=" rounded-4 "
+                style="cursor: pointer; width: 60px; height: 60px;">
+              <small style="color: #002F55;">Satelite</small>
+            </article>
+
+            <article class="d-flex flex-column align-items-center capa-vista" onclick="cambiarMapaBase('hibrido')">
+              <img src="assets/img/hibrido.png" alt="capa_hibrido" class=" rounded-4 "
+                style="cursor: pointer; width: 60px; height: 60px;">
+              <small style="color: #002F55;">Híbrido</small>
+            </article>
+
+
+
+            <!-- <div class="form-check">
+              <input class="form-check-input" type="radio" name="mapaBase" id="mapaCallejero" value="callejero"
+                onchange="cambiarMapaBase()">
+              <label class="form-check-label" for="mapaCallejero">Relieve</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="mapaBase" id="mapaSatelital" value="satelital"
+                onchange="cambiarMapaBase()">
+              <label class="form-check-label" for="mapaSatelital">Satelital</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="mapaBase" id="mapaHibrido" value="hibrido"
+                onchange="cambiarMapaBase()">
+              <label class="form-check-label" for="mapaHibrido">Híbrido</label>
+            </div> -->
+
+          </div>
+        </div>
+
         <div class="dropdown" id="zona-selector">
-          <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button"
+          <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2 rounded-3" type="button"
             id="dropdownZona" data-bs-toggle="dropdown" aria-expanded="false" style="color: #002F55;">
             <span class="d-none d-sm-inline fw-bold">Zonas</span>
             <i class="bi bi-map-fill"></i>
           </button>
-          <div class="dropdown-menu p-3 w-100 w-md-auto dropdown-menu dropdown-menu-end " aria-labelledby="dropdownZona"
-            style="min-width:220px;max-width:100vw;">
+          <div class="dropdown-menu p-3 w-100 w-md-auto dropdown-menu dropdown-menu-end rounded-3" "
+            aria-labelledby=" dropdownZona" style="min-width:220px;max-width:100vw;">
             <label for="zona" class="form-label mb-1">Selecciona zona:</label>
             <select id="zona" class="form-select form-select-sm mb-2" onchange="cargarZona()">
               <option value="" disabled selected hidden>Ninguna</option>
             </select>
-            <button onclick="limpiarZona()" class="btn btn-outline-primary btn-sm w-100">Limpiar</button>
+            <button onclick="limpiarZona(); limpiarFiltro();"
+              class="btn btn-outline-primary btn-sm w-100">Limpiar</button>
           </div>
         </div>
 
         <div class="dropdown" id="GestionarCapas">
-          <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button"
+          <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2 rounded-3" type="button"
             id="dropdownCapas" data-bs-toggle="dropdown" aria-expanded="false" style="color: #002F55;">
             <span class="d-none d-sm-inline fw-bold">Gestionar Capas</span>
             <i class="bi bi-layers-fill ms-2"></i>
           </button>
-          <div class="dropdown-menu p-3 w-100 w-md-auto dropdown-menu dropdown-menu-end" aria-labelledby="dropdownCapas"
-            style="min-width:220px;max-width:100vw;">
+          <div class="dropdown-menu p-3 w-100 w-md-auto dropdown-menu dropdown-menu-end rounded-3 "
+            aria-labelledby="dropdownCapas" style="min-width:220px;max-width:100vw;">
             <label class="form-label mb-2 ">Selecciona las capas:</label>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" value="Terreno" id="capaTerreno"
@@ -216,7 +275,7 @@
     <div
       style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(79, 79, 80, 0.486) no-repeat center center;background-size:50px auto;z-index:2000;justify-content:center;align-items:center;flex-direction:column;display:flex;"
       class="border">
-      <img src="assets/img/logoarbi.png" alt="logo arbimaps" style="width: 80px;" class="mb-2">
+      <img src="assets/img/Frame_2.png" alt="logo arbimaps" style="width: 60px;" class="mb-2">
       <div class="spinner-border" style="width:2rem;height:2rem; color: #002F55;" role="status">
         <span class="visually-hidden">Cargando capa...</span>
       </div>
