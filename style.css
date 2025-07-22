@@ -5,10 +5,16 @@
 body {
   margin: 0;
   background: #e93a3a;
+  /* Prevenir zoom en móviles */
+  touch-action: pan-x pan-y;
+  -ms-touch-action: pan-x pan-y;
 }
 #map {
   height: 90vh;
   width: 100%;
+  /* Configuraciones específicas para el mapa en móviles */
+  touch-action: none;
+  -ms-touch-action: none;
 }
 #panel-controles {
   position: absolute;
@@ -83,3 +89,39 @@ button:hover {
 datalist option {
   text-transform: capitalize;
 }
+
+
+/* Hover en la imagen cuando se hace hover al article */
+.capa-vista:hover img {
+  outline: 2px solid #002F55;
+}
+
+/* Hover en el texto cuando se hace hover al article */
+.capa-vista:hover small {
+  font-weight: bold;
+}
+
+/* Estado activo para la capa seleccionada */
+.capa-vista.activa {
+
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.capa-vista.activa img {
+  border: 2px solid #002F55 !important;
+  box-shadow: 0 2px 8px rgba(0,47,85,0.3);
+}
+
+.capa-vista.activa small {
+  font-weight: bold !important;
+  color: #002F55 !important;
+}
+
+.capa-vista {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+
+

@@ -97,7 +97,10 @@
   position: relative;
 }
 
+.menu-vista{
+  width: 260px;
 
+}
 
 body {
   margin: 0;
@@ -111,6 +114,7 @@ body {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
+
 
 hr {
   margin: 1rem 0;

@@ -26,19 +26,75 @@ const hibrido = L.layerGroup([
 
 const map = L.map('map', {
   center: [2.93, -75.28],
-  zoom: 13,
-  layers: [callejero]  // capa inicial
+  zoom: 12,
+  layers: [callejero],  // capa inicial
+
+  // Configuraciones para móviles
+  tap: true,
+  touchZoom: true,
+  doubleClickZoom: true,
+  scrollWheelZoom: true,
+  boxZoom: false,
+  keyboard: true,
+  zoomControl: true,
+  attributionControl: true
 });
 
-// Control de capas base
+// Objeto para gestionar las capas base
 const baseMaps = {
-  "Calles": callejero,
-  "Satelital": satelital,
-  "Híbrido": hibrido
+  "callejero": callejero,
+  "satelital": satelital,
+  "hibrido": hibrido
 };
 
+// Variable para rastrear la capa base actual
+let capaBaseActual = callejero;
+
+// Función para cambiar la capa base desde el dropdown
+function cambiarMapaBase(tipoMapa) {
+  // Remover la capa base actual
+  if (capaBaseActual) {
+    map.removeLayer(capaBaseActual);
+  }
+
+  // Añadir la nueva capa base
+  capaBaseActual = baseMaps[tipoMapa];
+  map.addLayer(capaBaseActual);
+
+  // Actualizar estado visual de las capas
+  actualizarEstadoVisualCapas(tipoMapa);
+
+  console.log(`Capa base cambiada a: ${tipoMapa}`);
+}
+
+// Función para actualizar el estado visual de las capas
+function actualizarEstadoVisualCapas(capaActiva) {
+  // Remover clase activa de todos los articles
+  document.querySelectorAll('.capa-vista').forEach(article => {
+    article.classList.remove('activa');
+  });
+
+  // Añadir clase activa al article correspondiente
+  const articles = document.querySelectorAll('.capa-vista');
+  articles.forEach(article => {
+    const onclick = article.getAttribute('onclick');
+    if (onclick && onclick.includes(`'${capaActiva}'`)) {
+      article.classList.add('activa');
+    }
+  });
+}
+
+// Inicializar el estado visual al cargar la página
+document.addEventListener('DOMContentLoaded', function () {
+  // Marcar la capa inicial como activa (callejero)
+  actualizarEstadoVisualCapas('callejero');
+});
+
+// Hacer la función global para que funcione con onclick
+window.cambiarMapaBase = cambiarMapaBase;
+
 // Aquí puedes añadir también tus capas vectoriales si quieres mostrarlas en el control
-L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
+// L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
 L.control.scale({ position: 'bottomleft' }).addTo(map);
 
 
@@ -390,7 +446,7 @@ function limpiarFiltro() {
   document.getElementById('filtro-valor').value = '';
   if (capaFiltrada) map.removeLayer(capaFiltrada);
   capaFiltrada = null;
-    const comunas = geojsonOriginal["Comunas"];
+  const comunas = geojsonOriginal["Comunas"];
   if (comunas && comunas.features && comunas.features.length > 0) {
     const capaComunas = L.geoJSON(comunas);
     map.fitBounds(capaComunas.getBounds());
