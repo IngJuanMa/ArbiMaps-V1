@@ -23,6 +23,7 @@ const hibrido = L.layerGroup([
   })
 ]);
 
+
 const map = L.map('map', {
   center: [2.93, -75.28],
   zoom: 13,
@@ -38,6 +39,7 @@ const baseMaps = {
 
 // Aquí puedes añadir también tus capas vectoriales si quieres mostrarlas en el control
 L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
+L.control.scale({ position: 'bottomleft' }).addTo(map);
 
 
 let capaZonaActual = null;
@@ -388,6 +390,7 @@ function limpiarFiltro() {
   document.getElementById('filtro-valor').value = '';
   if (capaFiltrada) map.removeLayer(capaFiltrada);
   capaFiltrada = null;
+  map.setZoom(13);
 }
 
 // Control de capas desde checkboxes del menú Gestionar Capas
