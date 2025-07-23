@@ -108,10 +108,10 @@ const geojsonOriginal = {};
 // const controlCapas = L.control.layers({}, {}).addTo(map); // Desactivado por menú personalizado
 
 const configuracionCapas = {
-  "Terreno": { archivo: "terreno.geojson", estilo: { color: 'red', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "uso", minZoom: 19, maxZoom: 22 },
+  "Terreno": { archivo: "terreno.geojson", estilo: { color: 'red', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "uso", minZoom: 18, maxZoom: 22 },
   "Unidades": { archivo: "unidades.geojson", estilo: { color: 'purple', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "estado", minZoom: 19, maxZoom: 22 },
   // "Manzanas": { archivo: "manzanas_BARRIO1.geojson", estilo: { color: 'orange' }, campoPopup: "BARRIO" },
-  "Barrios": { archivo: "barrios.geojson", estilo: { color: 'green', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "BARRIO", minZoom: 16, maxZoom: 18 },
+  "Barrios": { archivo: "barrios.geojson", estilo: { color: 'green', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "BARRIO", minZoom: 16, maxZoom: 17 },
   "Comunas": { archivo: "comunas.geojson", estilo: { color: 'blue', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "COMUNA", minZoom: 0, maxZoom: 15 }
 };
 
