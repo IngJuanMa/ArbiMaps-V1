@@ -131,14 +131,35 @@ for (const nombre in configuracionCapas) {
 let capasVisibles = {}; // Guarda referencias a capas activas
 let timeoutTerreno = null; // Para controlar la carga pendiente
 
-// Loader para capa Terreno
+// Loader para capa Terreno con animaciones
 function mostrarLoaderTerreno() {
   const loader = document.getElementById('loader-terreno');
-  if (loader) loader.style.display = 'flex';
+  if (loader) {
+    // Mostrar el elemento
+    loader.style.display = 'flex';
+    // Forzar un reflow para que la transición funcione
+    loader.offsetHeight;
+    // Agregar clase para animación de entrada
+    loader.classList.add('show');
+    loader.classList.remove('hide');
+  }
 }
+
 function ocultarLoaderTerreno() {
   const loader = document.getElementById('loader-terreno');
-  if (loader) loader.style.display = 'none';
+  if (loader) {
+    // Agregar clase para animación de salida
+    loader.classList.add('hide');
+    loader.classList.remove('show');
+
+    // Ocultar completamente después de la animación
+    setTimeout(() => {
+      if (loader.classList.contains('hide')) {
+        loader.style.display = 'none';
+        loader.classList.remove('hide');
+      }
+    }, 300); // Tiempo debe coincidir con la duración de la transición CSS
+  }
 }
 
 map.on('moveend zoomend', () => {
