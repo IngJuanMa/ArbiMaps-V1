@@ -423,7 +423,7 @@ function filtrarCapa() {
   if (!capaNombre || !campo || !valor) return;
 
   const base = geojsonOriginal[capaNombre]?.features || [];
-  const filtradas = base.filter(f => (f.properties?.[campo] || '').toString().toLowerCase().includes(valor));
+  const filtradas = base.filter(f => (f.properties?.[campo] || '').toString().toLowerCase() === valor);
 
   if (capaFiltrada) map.removeLayer(capaFiltrada);
 
@@ -513,4 +513,78 @@ function toggleCapa(nombre) {
       capasVisibles[nombre] = null;
     }
   }
+}
+
+
+// Funciones para filtros en Offcanvas móvil
+function actualizarCamposMovil() {
+  const capa = document.getElementById('filtro-capa-movil').value;
+  const campoSelect = document.getElementById('filtro-campo-movil');
+  campoSelect.innerHTML = '';
+  if (!geojsonOriginal[capa]) {
+    const { archivo } = configuracionCapas[capa];
+    fetch(`data/${archivo}`)
+      .then(res => res.json())
+      .then(data => {
+        geojsonOriginal[capa] = data;
+        completarCamposMovil(capa);
+        actualizarValoresMovil();
+      });
+  } else {
+    completarCamposMovil(capa);
+    actualizarValoresMovil();
+  }
+}
+function completarCamposMovil(capa) {
+  const campoSelect = document.getElementById('filtro-campo-movil');
+  campoSelect.innerHTML = '';
+  (camposPorCapa[capa] || []).forEach(campo => {
+    const opt = document.createElement('option');
+    opt.value = campo;
+    opt.textContent = aliasCampos[campo] || campo;
+    campoSelect.appendChild(opt);
+  });
+}
+function actualizarValoresMovil() {
+  const capa = document.getElementById('filtro-capa-movil').value;
+  const campo = document.getElementById('filtro-campo-movil').value;
+  const lista = document.getElementById('lista-valores-movil');
+  lista.innerHTML = '';
+  const valores = new Set();
+  const datos = geojsonOriginal[capa]?.features || [];
+  datos.forEach(f => {
+    const valor = f.properties?.[campo];
+    if (valor) valores.add(valor);
+  });
+  [...valores].sort().forEach(valor => {
+    const opt = document.createElement('option');
+    opt.value = valor;
+    lista.appendChild(opt);
+  });
+}
+function filtrarCapaMovil() {
+  const capaNombre = document.getElementById('filtro-capa-movil').value;
+  const campo = document.getElementById('filtro-campo-movil').value;
+  const valor = document.getElementById('filtro-valor-movil').value.toLowerCase();
+  if (!capaNombre || !campo || !valor) return;
+  const base = geojsonOriginal[capaNombre]?.features || [];
+  const filtradas = base.filter(f => (f.properties?.[campo] || '').toString().toLowerCase() === valor);
+  if (window.capaFiltradaMovil) map.removeLayer(window.capaFiltradaMovil);
+  window.capaFiltradaMovil = L.geoJSON({ type: 'FeatureCollection', features: filtradas }, {
+    style: { color: 'yellow', weight: 2, fillOpacity: 0.6 },
+    onEachFeature: (feature, layer) => {
+      let popup = "";
+      for (let key in feature.properties) {
+        popup += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
+      }
+      layer.bindPopup(popup);
+    }
+  }).addTo(map);
+  if (filtradas.length > 0) map.fitBounds(window.capaFiltradaMovil.getBounds());
+  console.log(`Filtrados móvil: ${filtradas.length}`);
+}
+function limpiarFiltroMovil() {
+  document.getElementById('filtro-valor-movil').value = '';
+  if (window.capaFiltradaMovil) map.removeLayer(window.capaFiltradaMovil);
+  window.capaFiltradaMovil = null;
 }
