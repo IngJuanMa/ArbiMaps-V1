@@ -365,6 +365,7 @@ const aliasCampos = {
 //   });
 //   actualizarValores();
 // }
+
 function actualizarCampos() {
   const capa = document.getElementById('filtro-capa').value;
   const campoSelect = document.getElementById('filtro-campo');
