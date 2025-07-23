@@ -123,6 +123,36 @@ datalist option {
   transition: all 0.2s ease;
 }
 
+/* Animaciones para el loader */
+#loader-terreno {
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+#loader-terreno.show {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: all;
+}
+
+#loader-terreno.hide {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+/* Animación del contenido interno del loader */
+#loader-terreno .loader-content {
+  transition: transform 0.4s ease-out;
+  transform: translateY(20px);
+}
+
+#loader-terreno.show .loader-content {
+  transform: translateY(0);
+}
+
 
 
 
