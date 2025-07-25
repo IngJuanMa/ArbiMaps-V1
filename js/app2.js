@@ -1,20 +1,16 @@
-// const map = L.map('map').setView([2.93, -75.28], 13);
-// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//   maxZoom: 19,
-//   attribution: '&copy; OpenStreetMap contributors'
-// }).addTo(map);
-// L.control.scale({ position: 'bottomleft' }).addTo(map);
-
-const callejero = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// Cargue de la capa en leaflet y link donde se optiene el mapa para la vial
+const vial = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
+  attribution: '&copy; OpenStreetMap contributors',
 });
 
+// Cargue de la capa en leaflet y link donde se optiene el mapa para la satelital (dicha capa al ser de Esri y de caracter gratuito solo posee una resolución max de 18)
 const satelital = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 19,
   attribution: '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
 });
 
+// Cargue de la capa en leaflet y link donde se optiene el mapa para la satelital con la vial a la cual se le reduce la opacidad
 const hibrido = L.layerGroup([
   satelital,
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -23,11 +19,11 @@ const hibrido = L.layerGroup([
   })
 ]);
 
-
+// Crea el mapa base dandoles las coordenadas inciales (Neiva, Colombia) con un zoom de 12 y enciende la capa vial por defecto
 const map = L.map('map', {
   center: [2.93, -75.28],
   zoom: 12,
-  layers: [callejero],  // capa inicial
+  layers: [vial],  
 
   // Configuraciones para móviles
   tap: true,
@@ -40,57 +36,56 @@ const map = L.map('map', {
   attributionControl: true
 });
 
+// Creamos una capa pane que funciona principalmente para el uso de canvas y establecer el orden en que se superponen las imagenes
 map.createPane('canvas-pane');
 map.getPane('canvas-pane').style.zIndex = 400;
 
 // Objeto para gestionar las capas base
 const baseMaps = {
-  "callejero": callejero,
+  "vial": vial,
   "satelital": satelital,
   "hibrido": hibrido
 };
 
-// Variable para rastrear la capa base actual
-let capaBaseActual = callejero;
+// Capa base inicial
+let capaBaseActual = vial;
 
-// Función para cambiar la capa base desde el dropdown
+// Función: Cambiar la capa base del mapa
 function cambiarMapaBase(tipoMapa) {
-  // Remover la capa base actual
+  // Validación y cambio de capa
+  const nuevaCapa = baseMaps[tipoMapa];
+  if (!nuevaCapa) {
+    console.warn(`La capa "${tipoMapa}" no está definida en baseMaps.`);
+    return;
+  }
+
   if (capaBaseActual) {
     map.removeLayer(capaBaseActual);
   }
 
-  // Añadir la nueva capa base
-  capaBaseActual = baseMaps[tipoMapa];
+  capaBaseActual = nuevaCapa;
   map.addLayer(capaBaseActual);
 
-  // Actualizar estado visual de las capas
   actualizarEstadoVisualCapas(tipoMapa);
-
   console.log(`Capa base cambiada a: ${tipoMapa}`);
 }
 
-// Función para actualizar el estado visual de las capas
+// Función: Actualizar los estilos visuales de los botones de capa
 function actualizarEstadoVisualCapas(capaActiva) {
-  // Remover clase activa de todos los articles
-  document.querySelectorAll('.capa-vista').forEach(article => {
-    article.classList.remove('activa');
-  });
+  const articulos = document.querySelectorAll('.capa-vista');
 
-  // Añadir clase activa al article correspondiente
-  const articles = document.querySelectorAll('.capa-vista');
-  articles.forEach(article => {
-    const onclick = article.getAttribute('onclick');
-    if (onclick && onclick.includes(`'${capaActiva}'`)) {
-      article.classList.add('activa');
-    }
+  articulos.forEach(article => {
+    const onclickAttr = article.getAttribute('onclick') || "";
+    const esActiva = onclickAttr.includes(`'${capaActiva}'`);
+
+    article.classList.toggle('activa', esActiva);
   });
 }
 
 // Inicializar el estado visual al cargar la página
 document.addEventListener('DOMContentLoaded', function () {
-  // Marcar la capa inicial como activa (callejero)
-  actualizarEstadoVisualCapas('callejero');
+  // Marcar la capa inicial como activa (vial)
+  actualizarEstadoVisualCapas('vial');
 });
 
 // Hacer la función global para que funcione con onclick
