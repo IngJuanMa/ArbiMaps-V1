@@ -92,29 +92,24 @@ document.addEventListener('DOMContentLoaded', function () {
 window.cambiarMapaBase = cambiarMapaBase;
 
 // Aquí puedes añadir también tus capas vectoriales si quieres mostrarlas en el control
-// L.control.layers(baseMaps, null, { position: 'topright', collapsed: false }).addTo(map);
 L.control.scale({ position: 'bottomleft' }).addTo(map);
 
-
+// Creación de variables para control de capas
 let capaZonaActual = null;
 let capaFiltrada = null;
 const capasGeojson = {};
 const geojsonOriginal = {};
+
 // const controlCapas = L.control.layers({}, {}).addTo(map); // Desactivado por menú personalizado
 
 const configuracionCapas = {
   "Terreno": { archivo: "terreno.geojson", estilo: { color: 'red', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "uso", minZoom: 18, maxZoom: 22 },
   "Unidades": { archivo: "unidades.geojson", estilo: { color: 'purple', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "estado", minZoom: 19, maxZoom: 22 },
-  // "Manzanas": { archivo: "manzanas_BARRIO1.geojson", estilo: { color: 'orange' }, campoPopup: "BARRIO" },
   "Barrios": { archivo: "barrios.geojson", estilo: { color: 'green', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "BARRIO", minZoom: 16, maxZoom: 17 },
   "Comunas": { archivo: "comunas.geojson", estilo: { color: 'blue', weight: 0.6, fillOpacity: 0.2 }, campoPopup: "COMUNA", minZoom: 0, maxZoom: 15 }
 };
 
-// for (const nombre in configuracionCapas) {
-//   controlCapas.addOverlay(L.layerGroup(), nombre);
-// }
-
-
+// Traer los GeoJson desde la carpeta data (Por como funciona la otra pagina se debera cambiar para que no se enceuntren dentro de una carpeta o corregir la ruta la encontrarse en la nube)
 for (const nombre in configuracionCapas) {
   const { archivo } = configuracionCapas[nombre];
   fetch(`data/${archivo}`)
@@ -124,7 +119,6 @@ for (const nombre in configuracionCapas) {
       console.log(`Capa ${nombre} descargada`);
     });
 }
-
 
 let capasVisibles = {}; // Guarda referencias a capas activas
 let timeoutTerreno = null; // Para controlar la carga pendiente
@@ -160,6 +154,7 @@ function ocultarLoaderTerreno() {
   }
 }
 
+
 map.on('moveend zoomend', () => {
   const zoom = map.getZoom();
   console.log(`Zoom actual: ${zoom}`);
@@ -168,14 +163,17 @@ map.on('moveend zoomend', () => {
     const config = configuracionCapas[nombre];
     const geojson = geojsonOriginal[nombre];
     if (!geojson) continue;
+
     const isVisible = zoom >= config.minZoom && zoom <= config.maxZoom;
     const checkbox = document.getElementById('capa' + nombre);
     const isChecked = checkbox && checkbox.checked;
 
-    // Si el usuario activó la capa manualmente, la mantenemos visible siempre
-    if (isChecked) {
+    const esTerreno = nombre === 'Terreno';
+
+    // Si la capa la activa el usuario
+    if (isChecked && checkbox.dataset.manual === 'true') {
       if (!capasVisibles[nombre]) {
-        if (nombre === 'Terreno') mostrarLoaderTerreno();
+        if (esTerreno) mostrarLoaderTerreno();
         capasVisibles[nombre] = L.geoJSON(geojson, {
           pane: 'canvas-pane',
           renderer: L.canvas(),
@@ -188,83 +186,53 @@ map.on('moveend zoomend', () => {
             layer.bindPopup(popup);
           }
         }).addTo(map);
-        if (nombre === 'Terreno') setTimeout(ocultarLoaderTerreno, 600);
+        if (esTerreno) setTimeout(ocultarLoaderTerreno, 600);
         console.log(`Capa ${nombre} activada por usuario`);
       }
-      // No la quitamos aunque el zoom cambie
       continue;
     }
 
-    // Si no está activada manualmente, aplica el control automático por zoom
-    if (nombre === 'Terreno') {
-      if (isVisible) {
-        if (!capasVisibles[nombre] && !timeoutTerreno) {
-          mostrarLoaderTerreno();
-          timeoutTerreno = setTimeout(() => {
-            if (map.getZoom() >= config.minZoom && map.getZoom() <= config.maxZoom) {
-              capasVisibles[nombre] = L.geoJSON(geojson, {
-                pane: 'canvas-pane',
-                renderer: L.canvas(),
-                style: () => config.estilo,
-                onEachFeature: (feature, layer) => {
-                  let popup = "";
-                  for (let key in feature.properties) {
-                    popup += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
-                  }
-                  layer.bindPopup(popup);
-                }
-              }).addTo(map);
-              console.log(`Capa ${nombre} activada (zoom)`);
+    // Manejo por zoom (auto)
+    if (isVisible) {
+      if (!capasVisibles[nombre]) {
+        if (esTerreno) mostrarLoaderTerreno();
+        capasVisibles[nombre] = L.geoJSON(geojson, {
+          pane: 'canvas-pane',
+          renderer: L.canvas(),
+          style: () => config.estilo,
+          onEachFeature: (feature, layer) => {
+            let popup = "";
+            for (let key in feature.properties) {
+              popup += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
             }
-            ocultarLoaderTerreno();
-            timeoutTerreno = null;
-          }, 600);
+            layer.bindPopup(popup);
+          }
+        }).addTo(map);
+        if (checkbox) {
+          checkbox.checked = true;
+          checkbox.dataset.manual = 'false';
         }
-      } else {
-        if (timeoutTerreno) {
-          clearTimeout(timeoutTerreno);
-          timeoutTerreno = null;
-        }
-        if (capasVisibles[nombre]) {
-          map.removeLayer(capasVisibles[nombre]);
-          capasVisibles[nombre] = null;
-          console.log(`Capa ${nombre} desactivada (zoom)`);
-        }
-        ocultarLoaderTerreno();
+        if (esTerreno) setTimeout(ocultarLoaderTerreno, 600);
+        console.log(`Capa ${nombre} activada (zoom)`);
       }
     } else {
-      if (isVisible) {
-        if (!capasVisibles[nombre]) {
-          capasVisibles[nombre] = L.geoJSON(geojson, {
-            pane: 'canvas-pane',
-            renderer: L.canvas(),
-            style: () => config.estilo,
-            onEachFeature: (feature, layer) => {
-              let popup = "";
-              for (let key in feature.properties) {
-                popup += `<strong>${key}:</strong> ${feature.properties[key]}<br>`;
-              }
-              layer.bindPopup(popup);
-            }
-          }).addTo(map);
-          console.log(`Capa ${nombre} activada (zoom)`);
+      if (capasVisibles[nombre]) {
+        map.removeLayer(capasVisibles[nombre]);
+        capasVisibles[nombre] = null;
+        if (checkbox && checkbox.dataset.manual !== 'true') {
+          checkbox.checked = false;
         }
-      } else {
-        if (capasVisibles[nombre]) {
-          map.removeLayer(capasVisibles[nombre]);
-          capasVisibles[nombre] = null;
-          console.log(`Capa ${nombre} desactivada (zoom)`);
-        }
+        console.log(`Capa ${nombre} desactivada (zoom)`);
+        if (esTerreno) ocultarLoaderTerreno();
       }
     }
   }
 });
 
 
-
 map.on('overlayadd', e => {
   const nombre = e.name;
-  // Mostrar loader si es Terreno
+  // Pantalla de carga para la capa Terreno
   if (nombre === 'Terreno') mostrarLoaderTerreno();
 
   if (capasGeojson[nombre]) {
@@ -352,6 +320,7 @@ function limpiarZona() {
   document.getElementById('zona').value = '';
 }
 
+// Cuando se clicke sobre un terreno que arroje información relevante
 fetch('data/zonas.json')
   .then(res => res.json())
   .then(zonas => {
@@ -380,18 +349,6 @@ const aliasCampos = {
   "PK_BARRIO": "Código Barrio"
 };
 
-// function actualizarCampos() {
-//   const capa = document.getElementById('filtro-capa').value;
-//   const campoSelect = document.getElementById('filtro-campo');
-//   campoSelect.innerHTML = '';
-//   (camposPorCapa[capa] || []).forEach(campo => {
-//     const opt = document.createElement('option');
-//     opt.value = campo;
-//     opt.textContent = aliasCampos[campo] || campo;
-//     campoSelect.appendChild(opt);
-//   });
-//   actualizarValores();
-// }
 
 function actualizarCampos() {
   const capa = document.getElementById('filtro-capa').value;
