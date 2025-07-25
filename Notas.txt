@@ -1,2 +1,4 @@
 Primera versión del visor, utilicé el código de alejandro.
 Funciona en algunos casos, pero se deben corregir algunas cosas.
+
+Segundoa revisión y control de capas
